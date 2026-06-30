@@ -1,10 +1,10 @@
-from dotenv import load_dotenv
-load_dotenv() 
-
 import os
 from flask import Flask
 from flask_mail import Mail
 from dotenv import load_dotenv
+
+load_dotenv()
+
 from routes.auth import auth_bp
 from routes.resume import resume_bp
 from routes.analysis import analysis_bp
