@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% block title %}Analyze Resume — ScoreMyCV{% endblock %}
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="flex items-center gap-2">
+        <button class="hamburger" aria-label="Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span class="topbar-title">Analyze Resume</span>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div style="max-width:720px;margin:0 auto;">
+
+        <div class="mb-4">
+          <h2 class="display-font">Upload your resume</h2>
+          <p>Get an AI-powered ATS score, keyword gaps, and improvement suggestions instantly.</p>
+        </div>
+
+        <!-- Step 1: Upload -->
+        <div class="card mb-3" id="step-upload">
+          <div class="card-header">
+            <div class="flex items-center gap-2">
+              <div class="step-num" style="width:32px;height:32px;font-size:0.9375rem;">1</div>
+              <h3 style="margin:0;">Resume</h3>
+            </div>
+          </div>
+          <div class="card-body">
+            <div data-tabs>
+              <div class="tabs">
+                <button class="tab-btn active" data-tab="file">Upload File</button>
+                <button class="tab-btn" data-tab="paste">Paste Text</button>
+              </div>
+
+              <!-- File Upload Tab -->
+              <div class="tab-panel active" data-panel="file">
+                <div class="upload-zone" id="upload-zone">
+                  <input type="file" id="resume-file" accept=".pdf,.docx,.txt" aria-label="Upload resume file">
+                  <div class="upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  </div>
+                  <p style="font-weight:600;color:var(--text-primary);margin-bottom:0.25rem;">Drop your resume here</p>
+                  <p class="text-sm text-muted">PDF, DOCX, or TXT · Max 10 MB</p>
+                </div>
+                <div id="file-preview" class="hidden" style="margin-top:1rem;padding:0.875rem;background:var(--bg-surface-alt);border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:space-between;">
+                  <div class="flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span id="file-name" class="font-medium text-sm"></span>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" onclick="clearFile()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Paste Tab -->
+              <div class="tab-panel" data-panel="paste">
+                <textarea id="resume-text" class="form-control" rows="12" placeholder="Paste your resume text here...&#10;&#10;Include all sections: contact info, work experience, education, skills, projects, certifications."></textarea>
+                <div class="form-hint" id="char-count">0 characters</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Optional targeting -->
+        <div class="card mb-3">
+          <div class="card-header">
+            <div class="flex items-center gap-2">
+              <div class="step-num" style="width:32px;height:32px;font-size:0.9375rem;">2</div>
+              <h3 style="margin:0;">Target Role <span class="badge badge-gray" style="font-size:0.75rem;margin-left:0.5rem;">Optional</span></h3>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="text-sm mb-2" style="color:var(--text-secondary);">Add a company and/or designation for a customized match analysis.</p>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="company">Company</label>
+                <input type="text" id="company" class="form-control" placeholder="e.g. Google, Infosys, TCS" list="company-suggestions">
+                <datalist id="company-suggestions">
+                  <option value="Google"><option value="Amazon"><option value="Microsoft">
+                  <option value="Accenture"><option value="IBM"><option value="Infosys">
+                  <option value="Wipro"><option value="TCS"><option value="Deloitte">
+                  <option value="Manipal Technologies">
+                </datalist>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="designation">Designation</label>
+                <input type="text" id="designation" class="form-control" placeholder="e.g. Software Engineer" list="designation-suggestions">
+                <datalist id="designation-suggestions">
+                  <option value="Software Engineer"><option value="Full Stack Developer">
+                  <option value="Python Developer"><option value="Data Analyst">
+                  <option value="Business Analyst"><option value="Frontend Developer">
+                  <option value="Backend Developer"><option value="DevOps Engineer">
+                  <option value="Machine Learning Engineer">
+                </datalist>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analyze Button -->
+        <button class="btn btn-primary btn-block btn-lg" id="analyze-btn" onclick="startAnalysis()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Analyze Resume
+        </button>
+
+        <!-- Progress / Loading -->
+        <div id="loading-state" class="hidden mt-3">
+          <div class="card card-body text-center" style="padding:2rem;">
+            <div class="spinner mb-3"></div>
+            <p class="font-semibold" style="color:var(--text-primary);">Analyzing your resume…</p>
+            <p class="text-sm text-muted" id="loading-msg">Extracting text and running ATS checks</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+// File drag & drop
+const zone = document.getElementById("upload-zone");
+const fileInput = document.getElementById("resume-file");
+
+zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("dragover"); });
+zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+zone.addEventListener("drop", e => {
+  e.preventDefault();
+  zone.classList.remove("dragover");
+  const file = e.dataTransfer.files[0];
+  if (file) setFile(file);
+});
+
+fileInput.addEventListener("change", () => {
+  if (fileInput.files[0]) setFile(fileInput.files[0]);
+});
+
+function setFile(file) {
+  const allowed = ["application/pdf","application/vnd.openxmlformats-officedocument.wordprocessingml.document","text/plain"];
+  const extOk = /\.(pdf|docx|txt)$/i.test(file.name);
+  if (!extOk) { showToast("Only PDF, DOCX, or TXT files are allowed", "error"); return; }
+  if (file.size > 10 * 1024 * 1024) { showToast("File exceeds 10 MB limit", "error"); return; }
+  document.getElementById("file-name").textContent = `${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+  document.getElementById("file-preview").classList.remove("hidden");
+  zone.querySelector("input").style.display = "none";
+}
+
+function clearFile() {
+  fileInput.value = "";
+  document.getElementById("file-preview").classList.add("hidden");
+  zone.querySelector("input").style.display = "";
+}
+
+// Char counter for paste
+document.getElementById("resume-text").addEventListener("input", function() {
+  document.getElementById("char-count").textContent = `${this.value.length.toLocaleString()} characters`;
+});
+
+// Determine active tab
+function getActiveTab() {
+  return document.querySelector(".tab-btn.active")?.dataset.tab;
+}
+
+const loadingMessages = [
+  "Extracting text and running ATS checks…",
+  "Analyzing keywords and section structure…",
+  "Checking formatting and grammar…",
+  "Generating improvement suggestions…",
+  "Almost done…"
+];
+
+async function startAnalysis() {
+  const btn = document.getElementById("analyze-btn");
+  const tab = getActiveTab();
+  const company = document.getElementById("company").value.trim();
+  const designation = document.getElementById("designation").value.trim();
+
+  let resumeId = null;
+
+  setLoading(btn, true);
+  document.getElementById("loading-state").classList.remove("hidden");
+
+  // Cycle loading messages
+  let msgIdx = 0;
+  const msgEl = document.getElementById("loading-msg");
+  const msgTimer = setInterval(() => {
+    msgIdx = (msgIdx + 1) % loadingMessages.length;
+    msgEl.textContent = loadingMessages[msgIdx];
+  }, 3000);
+
+  try {
+    // Step 1: Upload
+    if (tab === "paste") {
+      const text = document.getElementById("resume-text").value.trim();
+      if (text.length < 100) { showToast("Please paste your resume text (at least 100 characters)", "error"); throw new Error("Too short"); }
+      const data = await apiFetch("/resume/upload", { method: "POST", body: JSON.stringify({ text }) });
+      resumeId = data.resume_id;
+    } else {
+      const file = fileInput.files[0];
+      if (!file) { showToast("Please select a file to upload", "error"); throw new Error("No file"); }
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/resume/upload", { method: "POST", body: formData, credentials: "same-origin" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      resumeId = data.resume_id;
+    }
+
+    // Step 2: Analyze
+    const result = await apiFetch("/analysis/analyze", {
+      method: "POST",
+      body: JSON.stringify({ resume_id: resumeId, company, designation })
+    });
+
+    clearInterval(msgTimer);
+    showToast("Analysis complete!", "success");
+    setTimeout(() => window.location.href = `/result/${result.analysis_id}`, 400);
+
+  } catch (err) {
+    clearInterval(msgTimer);
+    document.getElementById("loading-state").classList.add("hidden");
+    setLoading(btn, false);
+    if (err.message !== "Too short" && err.message !== "No file") {
+      showToast(err.message || "Analysis failed. Please try again.", "error");
+    }
+  }
+}
+</script>
+{% endblock %}
